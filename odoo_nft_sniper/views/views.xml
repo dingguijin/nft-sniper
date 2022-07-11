@@ -1,0 +1,63 @@
+<odoo>
+  <data>
+    
+    <record id="raw_block_view_tree" model="ir.ui.view">
+      <field name="name">row.block.view.tree</field>
+      <field name="model">nft_sniper.raw_block</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="id"/>
+          <field name="name"/>
+        </tree>
+      </field>
+    </record>
+
+    <record id="raw_transaction_view_tree" model="ir.ui.view">
+      <field name="name">row.transaction.view.tree</field>
+      <field name="model">nft_sniper.raw_transaction</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="id"/>
+          <field name="name"/>
+        </tree>
+      </field>
+    </record>
+
+    <record id="open_view_raw_block" model="ir.actions.act_window">
+      <field name="name">Raw Block</field>
+      <field name="res_model">nft_sniper.raw_block</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="open_view_raw_transaction" model="ir.actions.act_window">
+      <field name="name">Raw Transaction</field>
+      <field name="res_model">nft_sniper.raw_transaction</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Menus -->
+    <menuitem
+        id="menu_nft_sniper_root"
+        name="Nft Sniper"
+        web_icon="odoo_nft_sniper/static/description/icon.png"
+        sequence="75"/>
+    
+    <menuitem
+        id="menu_all_block"
+        name="Blocks"
+        parent="menu_nft_sniper_root"
+        action="open_view_raw_block"
+        sequence="1"/>
+
+    <menuitem
+        id="menu_all_transaction"
+        name="Transactions"
+        parent="menu_nft_sniper_root"
+        action="open_view_raw_transaction"
+        sequence="1"/>
+
+
+  </data>
+
+</odoo>
+
