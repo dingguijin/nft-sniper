@@ -34,7 +34,6 @@ class EthWorker():
         return
 
     async def run_loop(self):
-        await self.eth_stream.get_latest_block()
         await asyncio.gather(self._run_command_loop(),
                              self._run_sniffer_loop())
         odoo.sql_db.close_db(self.dbname)
@@ -44,14 +43,15 @@ class EthWorker():
         while True:
             if self.is_stop:
                 break
-            await asyncio.sleep(3)
+            await asyncio.sleep(5)
         return
 
     async def _run_sniffer_loop(self):
         while True:
             if self.is_stop:
                 break
-            await asyncio.sleep(3)
+            await self.eth_stream.sync_block()
+            await asyncio.sleep(24)
         return
 
     async def _stop(self):
@@ -68,22 +68,14 @@ class EthStream():
         self.status = "NULL"
         self.server = server
         self.db_connection = server.db_connection
-        self.latest_block_id = None
+        self.latest_block = None
         w3 = Web3(Web3.HTTPProvider("https://eth.ppmessage.com"))
         w3.provider.request_counter = itertools.count(start=1)
         self.web3 = w3
         return
 
     async def get_latest_block(self):
-        block = self.web3.eth.get_block("latest", False)
-        if not block:
-            return
-        self.latest_block = block
-        self.latest_block_id = block.get("number")
-        _logger.info(block)
-
-        await self.save_block(block)
-        return
+        return self.web3.eth.get_block("latest", False)
 
     async def check_block(self):
         return
@@ -91,3 +83,39 @@ class EthStream():
     async def save_block(self, block):
         return
 
+    async def sync_block(self):
+        numbers = self.get_sync_block_numbers()
+        if not numbers:
+            return
+        _logger.info(numbers)
+        for number in numbers:
+            try:
+                block = self.web3.eth.get_block(number, True)
+            except Exception as e:
+                _logger.info("Exception %s" % e)
+                await asyncio.sleep(1)
+                break
+            
+            if block:
+                self.latest_block = block
+        return
+
+    def get_sync_block_numbers(self):
+        try:
+            block = self.web3.eth.get_block("latest", False)
+        except Exception as e:
+            _logger.info("Exception %s", e)
+            return []
+        
+        if not block:
+            return []
+
+        if not self.latest_block:
+            return [block.number]
+
+        if block.number == self.latest_block.number:
+            return []
+        
+        return list(range(self.latest_block.number+1, block.number))
+
+            
