@@ -7,7 +7,28 @@
       <field name="arch" type="xml">
         <tree>
           <field name="id"/>
-          <field name="name"/>
+          <field name="raw_block_base_fee_per_gas" />
+          <field name="raw_block_difficulty" />
+          <field name="raw_block_extra_data" />
+          <field name="raw_block_gas_limit" />
+          <field name="raw_block_gas_used" />
+          <field name="raw_block_hash" />
+          <field name="raw_block_logs_bloom" />
+          <field name="raw_block_miner" />
+          
+          <field name="raw_block_mix_hash" />
+          <field name="raw_block_nonce" />
+          <field name="raw_block_number" />
+          <field name="raw_block_parent_hash" />
+          <field name="raw_block_parent_id" />
+          <field name="raw_block_receipts_root" />
+          <field name="raw_block_sha3_uncles" />
+          <field name="raw_block_size" />
+          <field name="raw_block_state_root" />
+          <field name="raw_block_timestamp" />
+          <field name="raw_block_total_difficulty" />
+          <field name="raw_block_transactions_root" />
+          <field name="raw_block_uncles" />
         </tree>
       </field>
     </record>
@@ -18,7 +39,27 @@
       <field name="arch" type="xml">
         <tree>
           <field name="id"/>
-          <field name="name"/>
+
+          <field name="raw_transaction_block_hash" />
+          <field name="raw_transaction_block_number" />
+          <field name="raw_transaction_from" />
+          <field name="raw_transaction_gas" />
+          <field name="raw_transaction_gas_price" />
+          <field name="raw_transaction_max_fee_per_gas" />
+          <field name="raw_transaction_max_priority_fee_per_gas" />
+          <field name="raw_transaction_hash" />
+          <field name="raw_transaction_input" />
+          <field name="raw_transaction_nonce" />
+          <field name="raw_transaction_to" />
+          <field name="raw_transaction_transaction_index" />
+          <field name="raw_transaction_value" />
+          <field name="raw_transaction_type" />
+          <field name="raw_transaction_access_list" />
+          <field name="raw_transaction_chain_id" />
+          <field name="raw_transaction_v" />
+          <field name="raw_transaction_r" />
+          <field name="raw_transaction_s" />
+         
         </tree>
       </field>
     </record>
