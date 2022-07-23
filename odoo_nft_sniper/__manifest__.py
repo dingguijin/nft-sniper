@@ -17,6 +17,7 @@
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
+        'views/login_template.xml',
         'views/views.xml',
     ],
     'assets': {
@@ -24,9 +25,11 @@
             'odoo_nft_sniper/static/src/xml/*.xml'
         ],
         'web.assets_backend': [
-            'odoo_nft_sniper/static/src/js/*.js'
         ],
         'web.assets_frontend': [
+        ],
+        'web.assets_common': [
+            'odoo_nft_sniper/static/src/js/login_with_metamask.js'
         ],
         'web.tests_assets': [
         ],

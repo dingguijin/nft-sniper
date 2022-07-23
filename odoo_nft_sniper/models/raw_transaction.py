@@ -33,5 +33,7 @@ class RawTransaction(models.Model):
     raw_transaction_r = fields.Char('r')
     raw_transaction_s = fields.Char('s')
     
-
+    raw_transaction_create_receipt = fields.Boolean('createReceipt', default=False, index=True)
+    raw_transaction_create_contract = fields.Boolean('createContract', default=False, index=True)
     
+
