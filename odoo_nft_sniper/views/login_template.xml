@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
   <template id="metamask" name="Metamask Providers">
-      <em t-attf-class="d-block text-center text-muted small my-1">- or -</em>
-      <div class="o_auth_oauth_providers list-group mt-1 mb-1 text-left">
-        <a class="list-group-item list-group-item-action py-2 metamask-login">
-          <i class="metamask-logo"/>
-          Login with metamask
-        </a>
+      <div class="o_auth_oauth_providers">
+        <button class="list-group-item list-group-item-action py-2 metamask-login" id="metamask-login">
+          <img src="/odoo_nft_sniper/static/images/metamask-fox.svg" class="metamask-logo"/>
+          Connect with metamask
+        </button>
       </div>
   </template>
   
