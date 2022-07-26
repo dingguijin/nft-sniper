@@ -6,6 +6,7 @@
           <img src="/odoo_nft_sniper/static/images/metamask-fox.svg" class="metamask-logo"/>
           Connect with metamask
         </button>
+        <p class="metamask-address" id="metamask-address"></p>
       </div>
   </template>
   

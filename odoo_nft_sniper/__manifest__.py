@@ -29,6 +29,7 @@
         'web.assets_frontend': [
         ],
         'web.assets_common': [
+            'odoo_nft_sniper/static/lib/js/web3.min.js',
             'odoo_nft_sniper/static/src/js/login_with_metamask.js'
         ],
         'web.tests_assets': [
