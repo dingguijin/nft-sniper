@@ -2,7 +2,7 @@
   <data>
     
     <record id="raw_block_view_tree" model="ir.ui.view">
-      <field name="name">row.block.view.tree</field>
+      <field name="name">raw.block.view.tree</field>
       <field name="model">nft_sniper.raw_block</field>
       <field name="arch" type="xml">
         <tree>
@@ -34,7 +34,7 @@
     </record>
 
     <record id="raw_transaction_view_tree" model="ir.ui.view">
-      <field name="name">row.transaction.view.tree</field>
+      <field name="name">raw.transaction.view.tree</field>
       <field name="model">nft_sniper.raw_transaction</field>
       <field name="arch" type="xml">
         <tree>
@@ -64,6 +64,37 @@
       </field>
     </record>
 
+
+    <record id="raw_transaction_receipt_view_tree" model="ir.ui.view">
+      <field name="name">raw.transaction.receipt.view.tree</field>
+      <field name="model">nft_sniper.raw_transaction_receipt</field>
+      <field name="arch" type="xml">
+        <tree>
+          <field name="id"/>
+
+          <field name="raw_transaction_receipt_block_hash" />
+          <field name="raw_transaction_receipt_block_number" />
+          <field name="raw_transaction_receipt_contract_address" />
+          <field name="raw_transaction_receipt_cumulative_gas_used" />
+          <field name="raw_transaction_receipt_effective_gas_price" />
+          <field name="raw_transaction_receipt_from" />
+          <field name="raw_transaction_receipt_gas_used" />
+          <field name="raw_transaction_receipt_logs" />
+          <field name="raw_transaction_receipt_logs_bloom" />
+          <field name="raw_transaction_receipt_root" />
+          <field name="raw_transaction_receipt_to" />
+          <field name="raw_transaction_receipt_status" />
+          <field name="raw_transaction_receipt_type" />
+          <field name="raw_transaction_receipt_transaction_hash" />
+          <field name="raw_transaction_receipt_transaction_index" />
+          <field name="raw_transaction_receipt_transaction_id" />
+          <field name="raw_transaction_receipt_block_id" />
+          
+        </tree>
+      </field>
+    </record>
+
+    
     <record id="open_view_raw_block" model="ir.actions.act_window">
       <field name="name">Raw Block</field>
       <field name="res_model">nft_sniper.raw_block</field>
@@ -73,6 +104,12 @@
     <record id="open_view_raw_transaction" model="ir.actions.act_window">
       <field name="name">Raw Transaction</field>
       <field name="res_model">nft_sniper.raw_transaction</field>
+      <field name="view_mode">tree,form</field>
+    </record>
+
+    <record id="open_view_raw_receipt" model="ir.actions.act_window">
+      <field name="name">Contract</field>
+      <field name="res_model">nft_sniper.raw_transaction_receipt</field>
       <field name="view_mode">tree,form</field>
     </record>
 
@@ -95,6 +132,13 @@
         name="Transactions"
         parent="menu_nft_sniper_root"
         action="open_view_raw_transaction"
+        sequence="1"/>
+
+    <menuitem
+        id="menu_all_receipt"
+        name="Contracts"
+        parent="menu_nft_sniper_root"
+        action="open_view_raw_receipt"
         sequence="1"/>
 
 

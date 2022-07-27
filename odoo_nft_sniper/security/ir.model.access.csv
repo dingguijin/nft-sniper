@@ -1,5 +1,8 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_nft_sniper_raw_transaction,access_nft_sniper_raw_transaction,model_nft_sniper_raw_transaction,base.group_user,1,1,1,1
+
 access_nft_sniper_raw_block,access_nft_sniper_raw_block,model_nft_sniper_raw_block,base.group_user,1,1,1,1
+
+access_nft_sniper_raw_transaction_receipt,access_nft_sniper_raw_transaction_receipt,model_nft_sniper_raw_transaction_receipt,base.group_user,1,1,1,1
 
 
