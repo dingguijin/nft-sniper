@@ -5,4 +5,8 @@ access_nft_sniper_raw_block,access_nft_sniper_raw_block,model_nft_sniper_raw_blo
 
 access_nft_sniper_raw_transaction_receipt,access_nft_sniper_raw_transaction_receipt,model_nft_sniper_raw_transaction_receipt,base.group_user,1,1,1,1
 
+access_nft_sniper_raw_verified_contract,access_nft_sniper_raw_verified_contract,model_nft_sniper_raw_verified_contract,base.group_user,1,1,1,1
+
+access_nft_sniper_raw_contract,access_nft_sniper_raw_contract,model_nft_sniper_raw_contract,base.group_user,1,1,1,1
+
 
