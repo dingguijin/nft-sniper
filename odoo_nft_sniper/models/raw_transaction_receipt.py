@@ -36,4 +36,5 @@ class RawTransactionReceipt(models.Model):
 
     
     raw_transaction_receipt_create_contract = fields.Boolean('createContract', default=False, index=True)
+    raw_transaction_receipt_create_nft = fields.Boolean('createNft', default=False, index=True)
     
