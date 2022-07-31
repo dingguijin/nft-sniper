@@ -98,8 +98,20 @@
       <field name="name">raw.contract.view.tree</field>
       <field name="model">nft_sniper.raw_contract</field>
       <field name="arch" type="xml">
-        <tree>
+        <tree js_class="contract_list_view">
+
           <field name="id"/>
+          <field name="raw_contract_name" />
+          <field name="raw_contract_address" />
+          <field name="raw_contract_abi" />
+          <field name="raw_contract_source_code" />
+          <field name="raw_contract_transaction_hash" />
+          <field name="raw_contract_erc_std" />
+          <field name="raw_contract_is_freemint" />
+          <field name="raw_contract_is_erc20" />
+          <field name="raw_contract_is_erc721" />
+          <field name="raw_contract_image" />
+          
         </tree>
       </field>
     </record>
@@ -108,8 +120,12 @@
       <field name="name">raw.verified_contract.view.tree</field>
       <field name="model">nft_sniper.raw_verified_contract</field>
       <field name="arch" type="xml">
-        <tree>
+        <tree js_class="contract_list_view">
           <field name="id"/>
+          <field name="contract_name"/>
+          <field name="contract_address"/>
+          <field name="tx_hash"/>
+          <field name="create_date"/>
         </tree>
       </field>
     </record>

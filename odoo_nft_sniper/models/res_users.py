@@ -19,24 +19,16 @@ class Users(models.Model):
     
     @classmethod
     def _login(cls, db, login, password, user_agent_env):
-        _logger.info(">?>>>>>>>>>>>>>>>>>>>")
-        _logger.info(login)
-        _logger.info(password)
-        _logger.info(user_agent_env)
-        _logger.info(">?>>>>>>>>>>>>>>>>>>>")
         try:
             return super(Users, cls)._login(db, login, password, user_agent_env=user_agent_env)
         except AccessDenied as e:
             with registry(db).cursor() as cr:
                 cr.execute("SELECT id FROM res_users WHERE lower(block_chain_address)=%s", (login,))
                 res = cr.dictfetchone()
-                _logger.info(">?>>>>>>>>>>>>>>>>>>>11111111")
                 if not res:
                     raise e
-                _logger.info(">?>>>>>>>>>>>>>>>>>>>111111112222")
                 if not cls._check_signature(login, password):
                     raise e
-                _logger.info(">?>>>>>>>>>>>>>>>>>>>11111111333333")
                 return res.get("id")
         return
 

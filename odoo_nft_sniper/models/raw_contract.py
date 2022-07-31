@@ -21,4 +21,44 @@ class RawContract(models.Model):
     raw_contract_is_freemint = fields.Boolean('rawContractIsFreemint')
     raw_contract_is_erc20 = fields.Boolean('rawContractIsErc20')
     raw_contract_is_erc721 = fields.Boolean('rawContractIsErc721')
-    
+    raw_contract_image = fields.Image('rawContractImage')
+
+    raw_contract_nft_parsed = fields.Boolean('rawContractNftParsed', default=False, index=True)
+
+    @api.model
+    def refresh(self):
+        _receipts = self.env["nft_sniper.raw_transaction_receipt"]
+        _verified = self.env["nft_sniper.raw_verified_contract"]
+        _contract = self.env["nft_sniper.raw_contract"]
+
+        _receipts_domain = [("raw_transaction_receipt_create_contract", "!=", True)]
+        _receipt_rs = _receipts.search(_receipts_domain)
+        if not _receipt_rs:
+            return
+        
+        _verified_domain = []
+        _verified_rs = _verified.search(_verified_domain)
+        if not _verified_rs:
+            return
+
+        _verified_addresses = list(map(lambda x: x.contract_address, _verified_rs))
+        _verified_sources = dict(zip(_verified_addresses, _verified_rs))
+        
+        _sources = []
+        for _receipt in _receipt_rs:
+            if _receipt.raw_transaction_receipt_contract_address in _verified_addresses:
+                _source = _verified_sources.get(_receipt.raw_transaction_receipt_contract_address)
+                if not _source:
+                    continue
+                _receipt.raw_transaction_receipt_create_contract = True
+                _sources.append(_source)
+
+        for _source in _sources:
+            _raw_contract.create({
+                "raw_contract_name": _source.contract_name,
+                "raw_contract_address": _source.contract_address,
+                "raw_contract_source_code": _source.contract_source,
+                "raw_contract_transaction_hash": _source.tx_hash,
+                "raw_contract_abi": _source.contract_abi                
+            })
+        return

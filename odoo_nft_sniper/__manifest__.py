@@ -25,6 +25,7 @@
             'odoo_nft_sniper/static/src/xml/*.xml'
         ],
         'web.assets_backend': [
+            'odoo_nft_sniper/static/src/js/contract_list_view.js',
         ],
         'web.assets_frontend': [
         ],
