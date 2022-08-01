@@ -14,6 +14,21 @@ class Download():
         _sourcecode = requests.get(_url)
         return _abi, _sourcecode
 
+    def _source_exists(self, contract_address):
+        _abi = contract_address + ".abi"
+        _source = contract_address + ".source"
+        if os.path.exists(_abi) and os.path.exists(_source):
+            return True
+        return False
+
+    def _save_source(self, contract_address, abi, source):
+        _abi = contract_address + ".abi"
+        _source = contract_address + ".source"
+        with open(_abi, "wb") as _file:
+            _file.write(abi)
+        with open(_source, "wb") as _file:
+            _file.write(source)
+        return
 
 def main():
     _etherscan_key = open(".etherscan.key").read()
@@ -27,7 +42,13 @@ def main():
             _line = _line.replace("\"", "")
             x = _line.split(",")
             print(x[1])
-            Download()._download_contract_source(x[1], _etherscan_key)
+            if _source_exists(x[1]):
+                continue
+            
+            _abi, _source = Download()._download_contract_source(x[1], _etherscan_key)
+            print(_abi)
+            print(_source)
+            if 
     return
 
 
