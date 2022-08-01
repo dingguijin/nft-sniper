@@ -1,8 +1,9 @@
+import requests
 
 class Download():
     def _action_url(self, contract_address, etherscan_api_key, action):
         _url = "https://api.etherscan.io/api?module=contract"
-        _url = "%s&action=%s&address=%s&apiKey=%s" % (action, _url,
+        _url = "%s&action=%s&address=%s&apiKey=%s" % (_url, action,
                                                       contract_address, etherscan_api_key)        
         return _url
     
@@ -15,6 +16,7 @@ class Download():
 
 
 def main():
+    _etherscan_key = open(".etherscan.key").read()
     _file = "../export-verified-contractaddress-opensource-license.csv"
     with open(_file, "rb") as _f:
         _f.readline()
@@ -25,7 +27,7 @@ def main():
             _line = _line.replace("\"", "")
             x = _line.split(",")
             print(x[1])
-            Download()._download_contract_source(x[1], ETHERSCAN_KEY)
+            Download()._download_contract_source(x[1], _etherscan_key)
     return
 
 
