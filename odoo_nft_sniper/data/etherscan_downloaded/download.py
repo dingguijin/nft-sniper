@@ -48,7 +48,6 @@ def main():
             _abi, _source = Download()._download_contract_source(x[1], _etherscan_key)
             print(_abi)
             print(_source)
-            if 
     return
 
 
