@@ -24,7 +24,8 @@ def main():
             _line = _line.decode("utf-8")
             _line = _line.replace("\"", "")
             x = _line.split(",")
-            print(x)
+            print(x[1])
+            Download()._download_contract_source(x[1], ETHERSCAN_KEY)
     return
 
 
