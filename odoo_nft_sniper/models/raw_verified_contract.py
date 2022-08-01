@@ -2,8 +2,11 @@
 
 import logging
 import os
+import requests
 
 from odoo import api, fields, models, _
+
+from . import download_contract_source
 
 _logger = logging.getLogger(__name__)
 
@@ -21,10 +24,20 @@ class RawVerifiedContract(models.Model):
     contract_abi = fields.Char("ContractAbi")
     contract_source = fields.Char("ContractSource")
 
+    contract_is_downloaded = fields.Boolean('ContractIsDownloaded', default=False, index=True)
+
     _sql_constraints = [
         ('contract_address_key', 'UNIQUE (contract_address)',  'You can not have two contract with the same address !')
     ]
 
+    @api.model
+    def download(self):
+        _undownload = self.search([("contract_is_downloaded", "!=", True)])
+        if not _undownload:
+            return
+        for _contract in _undownload:
+            download_contract_source(_contract.contract_address)
+        return
     
     @api.model
     def refresh(self):
@@ -52,3 +65,33 @@ class RawVerifiedContract(models.Model):
                     "contract_name": _fs[2]
                 })
         return
+
+
+    """
+    https://api.etherscan.io/api
+    ?module=contract
+    &action=getabi
+    &address=0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413
+    &apikey=YourApiKeyToken
+    
+    https://api.etherscan.io/api
+    ?module=contract
+    &action=getsourcecode
+    &address=0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413
+    &apikey=YourApiKeyToken 
+    
+    """
+
+    def _action_url(self, contract_address, etherscan_api_key, action):
+        _url = "https://api.etherscan.io/api?module=contract"
+        _url = "%s&action=%s&address=%s&apiKey=%s" % (action, _url,
+                                                      contract_address, etherscan_api_key)
+        
+        return _url
+    
+    def _download_contract_source(self, contract_address, etherscan_api_key):
+        _url = self._action_url(contract_address, etherscan_api_key, "getabi")
+        _abi = requests.get(_url)
+        _url = _action_url(contract_address, etherscan_api_key, "getsourcecode")
+        _sourcecode = requests.get(_url)
+        return _abi, _sourcecode

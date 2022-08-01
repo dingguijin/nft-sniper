@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <record id="ir_cron_nft_sniper_verified_contract" model="ir.cron">
+      <field name="name">Nft Sniper: Sniper Verified Contract</field>
+      <field name="model_id" ref="model_nft_sniper_raw_verified_contract"/>
+      <field name="state">code</field>
+      <field name="code">model.download_verified_code()</field>
+      <field name="user_id" ref="base.user_root"/>
+      <field name="interval_number">1</field>
+      <field name="interval_type">minutes</field>
+      <field name="numbercall">-1</field>
+      <field eval="False" name="doall"/>
+    </record>
+  </data>
+</odoo>

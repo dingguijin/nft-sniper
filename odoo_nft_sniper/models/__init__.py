@@ -6,3 +6,4 @@ from . import raw_transaction_receipt
 from . import raw_verified_contract
 
 from . import res_users
+from . import res_config_settings

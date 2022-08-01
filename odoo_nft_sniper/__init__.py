@@ -6,6 +6,7 @@ import signal
 from . import controllers
 from . import models
 from . import worker
+from . import tests
 
 def post_load():
     worker.worker()
