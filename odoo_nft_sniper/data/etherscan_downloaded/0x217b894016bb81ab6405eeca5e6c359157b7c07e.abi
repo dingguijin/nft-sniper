@@ -1,0 +1,1 @@
+{"status":"1","message":"OK","result":"[{\"inputs\":[],\"name\":\"CASH_TRANSFERRED\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]"}
