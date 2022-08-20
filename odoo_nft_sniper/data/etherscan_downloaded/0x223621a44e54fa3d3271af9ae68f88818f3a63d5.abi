@@ -1,0 +1,1 @@
+{"status":"1","message":"OK","result":"[{\"inputs\":[],\"name\":\"how_does_it_work\",\"outputs\":[{\"internalType\":\"string\",\"name\":\"\",\"type\":\"string\"}],\"stateMutability\":\"pure\",\"type\":\"function\"}]"}
