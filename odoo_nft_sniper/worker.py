@@ -81,7 +81,7 @@ class EthWorkerThread(threading.Thread):
     """
 
     def stop(self):
-        _logger.info("stoping ..... %s", self.__name__)
+        _logger.info("stoping ..... %s", self.name)
         self.cti.stop()
         return
 
@@ -92,7 +92,7 @@ class EthWorkerThread(threading.Thread):
         self.worker = eth_worker.EthWorker(dbname)
 
     def run(self):
-        _logger.info("%s start.", self.getName())
+        _logger.info("%s start.", self.name)
         asyncio.run(self.worker.run_loop())
-        _logger.info("%s stopped.", self.getName())
+        _logger.info("%s stopped.", self.name)
         

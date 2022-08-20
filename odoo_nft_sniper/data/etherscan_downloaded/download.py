@@ -9,9 +9,18 @@ class Download():
     
     def _download_contract_source(self, contract_address, etherscan_api_key):
         _url = self._action_url(contract_address, etherscan_api_key, "getabi")
-        _abi = requests.get(_url)
+        try:
+            _abi = requests.get(_url)
+        except Exception as e:
+            print(e)
+            return None, None
+        
         _url = _action_url(contract_address, etherscan_api_key, "getsourcecode")
-        _sourcecode = requests.get(_url)
+        try:
+            _sourcecode = requests.get(_url)
+        except Exception as e:
+            print(e)
+            return None, None
         return _abi, _sourcecode
 
     def _source_exists(self, contract_address):
@@ -46,9 +55,8 @@ def main():
                 continue
             
             _abi, _source = Download()._download_contract_source(x[1], _etherscan_key)
-            print(_abi)
-            print(_source)
-    return
+            
+        return
 
 
 if __name__ == "__main__":

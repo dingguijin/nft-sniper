@@ -35,7 +35,6 @@ _logger = logging.getLogger(__name__)
 def _camel_to_snake(s):
     return re.sub("([A-Z])", "_\\1", s).lower().lstrip("_")
 
-
 def _insert_sql(table_name, attrs, others={}, ignores=[]):
     _sql = "INSERT INTO %s %s VALUES %s RETURNING id;"
     _names = []
@@ -65,6 +64,26 @@ def _insert_sql(table_name, attrs, others={}, ignores=[]):
                    str(tuple(_names)).replace("'",""),
                    str(tuple(_values)))   
     return _sql
+
+def _parse_bytecode(bytecode):
+    from odoo.addons.odoo_nft_sniper.models.eth_contract_service import EthContractService    
+    _service = EthContractService()
+    try:
+        _function_sighashes = _service.get_function_sighashes(bytecode)
+    except Exception as e:
+        logging.error("Exception in sighashes: %s" % e)
+        return None
+
+    _logger.info("function_sighashes %s" % _function_sighashes)
+    
+    _is_erc20 = _service.is_erc20_contract(_function_sighashes)
+    _is_erc721 = _service.is_erc721_contract(_function_sighashes)
+    if not _is_erc20 and not _is_erc721:
+        return None
+
+    _logger.info("is_erc20 %s, is_erc721 %s" % (_is_erc20, _is_erc721))
+    return {"is_erc20": _is_erc20, "is_erc721": _is_erc721}
+
 
 class EthWorker():
     def __init__(self, dbname):
@@ -102,7 +121,7 @@ class EthWorker():
             if self.is_stop:
                 break
             self._create_contract()
-            await asyncio.sleep(1200)
+            await asyncio.sleep(32)
         return
 
     async def _run_command_loop(self):
@@ -128,11 +147,17 @@ class EthWorker():
         asyncio.run(self._stop())
 
     def _create_receipt(self):
-        with self.db_connection.cursor() as cr:
+        with self.db_connection.cursor() as cr:            
+            # _contract_sql = """
+            # SELECT * FROM nft_sniper_raw_transaction WHERE
+            # raw_transaction_to='None' AND (raw_transaction_create_receipt=false or raw_transaction_create_receipt is null) 
+            # """
+
             _contract_sql = """
             SELECT * FROM nft_sniper_raw_transaction WHERE
-            raw_transaction_to='None' AND (raw_transaction_create_receipt=false or raw_transaction_create_receipt is null) 
+            raw_transaction_to='None' AND raw_transaction_create_receipt is not true 
             """
+            
             cr.execute(_contract_sql)
             _transaction = cr.dictfetchone()
             if not _transaction:
@@ -152,11 +177,11 @@ class EthWorker():
         try:
             _receipt = self.web3.eth.get_transaction_receipt(transaction_hash)
         except Exception as e:
-            _logger.info(">> %s <<", e)
+            _logger.info(">> Receipt %s <<", e)
             return
         
         _logger.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-        _logger.info(_receipt)
+        _logger.info("save receipt for trans: %s", transaction_hash)
         _logger.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>")
 
         if not _receipt:
@@ -178,6 +203,51 @@ class EthWorker():
             cr.execute(_update_sql)
         return
 
+
+    def _create_contract_for_receipt(self, cr, receipt):
+        _receipt_id = receipt.get("id")
+        _contract_address = receipt.get("raw_transaction_receipt_contract_address")
+        _transaction_hash = receipt.get("raw_transaction_receipt_transaction_hash")
+        _transaction_id = receipt.get("raw_transaction_receipt_transaction_id")
+
+        cr.execute("SELECT * FROM nft_sniper_raw_transaction WHERE id=%d" % _transaction_id)
+        _transaction = cr.dictfetchone()
+        if not _transaction:
+            return
+
+        _contract = self._get_contract_name(_contract_address)
+        if not _contract:
+            return
+            
+        _sql = """
+        UPDATE nft_sniper_raw_transaction_receipt
+        SET raw_transaction_receipt_create_contract=true
+        WHERE id=%d
+        """ % _receipt_id
+        cr.execute(_sql)
+        
+        _sql = """
+        INSERT INTO nft_sniper_raw_contract (
+        raw_contract_transaction_id,
+        raw_contract_transaction_hash,
+        raw_contract_name,
+        raw_contract_symbol,
+        raw_contract_is_erc20,
+        raw_contract_is_erc721
+        )
+        VALUES (%s, '%s', '%s', '%s', %s, %s)
+        """ % (
+            _transaction_id,
+            _transaction_hash,
+            _contract.get("name"),
+            _contract.get("symbol"),
+            _transaction.get("raw_transaction_is_erc20"),
+            _transaction.get("raw_transaction_is_erc721")
+        )
+        
+        cr.execute(_sql)
+        return
+
     def _create_contract(self):
         with self.db_connection.cursor() as cr:
             _contract_sql = """
@@ -185,40 +255,25 @@ class EthWorker():
             raw_transaction_receipt_create_contract is not true
             """
             cr.execute(_contract_sql)
-            _receipt = cr.dictfetchone()
-            if not _receipt:
-                return
-
-            _receipt_id = _receipt.get("id")
-            _contract_address = _receipt.get("raw_transaction_receipt_contract_address")
-            _transaction_hash = _receipt.get("raw_transaction_receipt_transaction_hash")
-            _transaction_id = _receipt.get("raw_transaction_receipt_transaction_id")
-            _abi = self._get_contract_abi(_contract_address)
-            if _abi:
-                _sql = """
-                UPDATE nft_sniper_raw_transaction_receipt
-                SET raw_transaction_receipt_create_contract=true
-                WHERE id=%d
-                """ % _receipt_id
-                cr.execute(_sql)
-
-                _sql = """
-                INSERT INTO nft_sniper.raw_contract (
-                raw_contract_abi,
-                raw_contract_transaction_hash,
-                raw_contract_name,
-                raw_contract_transaction_id)
-                VALUES (%s, %s, %s, %d)
-                """ % (_abi.get("abi"),
-                       _transaction_hash,
-                       _abi.get("name"),
-                       _transaction_id)
-
-                cr.execute(_sql)
+            _receipts = cr.dictfetchall()
+            for _receipt in _receipts:
+                self._create_contract_for_receipt(cr, _receipt)
         return
 
-    def _get_contract_abi(self, transaction):
-        return None
+    def _get_contract_name(self, contract_address):
+        from odoo.addons.odoo_nft_sniper.models.eth_token_service import EthTokenService
+
+        _token_service = EthTokenService(self.web3)
+        _token = _token_service.get_token(contract_address)
+        if not _token:
+            logging.error("no name/symbol [%s]" % contract_address)
+            return None
+        
+        _logger.info("token name %s" % _token.name)
+        _logger.info("token symbol %s" % _token.symbol)
+        
+        return {"name": _token.name,
+                "symbol": _token.symbol}
 
 class EthStream():
 
@@ -291,5 +346,16 @@ class EthStream():
                            {"raw_transaction_block_id": block_id},
                            ["accessList"])
         with self.db_connection.cursor() as cr:
-            cr.execute(_sql)
+            _transaction_id = cr.execute(_sql)
+
+            if transaction.get("input"):
+                _parsed = _parse_bytecode(transaction.get("input"))
+                if _parsed:
+                    cr.execute("""
+                    UPDATE nft_sniper_raw_transaction SET 
+                    raw_transaction_is_erc20=%s,
+                    raw_transaction_is_erc721=%s WHERE id=%d""" %
+                               ("true" if _parsed.get("is_erc20") else "false",
+                                "true" if _parsed.get("is_erc721") else "false",
+                                _transaction_id))
         return

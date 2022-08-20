@@ -20,7 +20,7 @@ class RawTransaction(models.Model):
     raw_transaction_gas_price = fields.Char('gasPrice')
     raw_transaction_max_fee_per_gas = fields.Char('maxFeePerGas')
     raw_transaction_max_priority_fee_per_gas = fields.Char('maxPriorityFeePerGas')
-    raw_transaction_hash = fields.Char('hash')
+    raw_transaction_hash = fields.Char('hash', index=True)
     raw_transaction_input = fields.Char('input')
     raw_transaction_nonce = fields.Char('nonce')
     raw_transaction_to = fields.Char('to')
@@ -36,4 +36,6 @@ class RawTransaction(models.Model):
     raw_transaction_create_receipt = fields.Boolean('createReceipt', default=False, index=True)
     raw_transaction_create_contract = fields.Boolean('createContract', default=False, index=True)
     
-
+    raw_transaction_is_erc20 = fields.Boolean('isErc20')
+    raw_transaction_is_erc721 = fields.Boolean('isErc721')
+    
