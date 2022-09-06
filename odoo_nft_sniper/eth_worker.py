@@ -339,38 +339,44 @@ class EthStream():
         return
 
     def _save_transaction_to_db(self, block_id, transaction):
+
+        _bytecode = transaction.get("input")
+        if not _bytecode or len(_bytecode) < 32:
+            _logger.info("Ignore transation without input %s" % Web3.toHex(transaction.get("hash")))
+            return
+        
+        _parsed = _parse_bytecode(_bytecode, self.fuzzy_mints)
+        if not _parsed:
+            return
+        
+        _name = _parse_name_and_symbol(_bytecode)
+        if not _name:
+            return
+
         _sql = _insert_sql("raw_transaction", transaction,
                            {"raw_transaction_block_id": block_id},
                            ["accessList"])
         with self.db_connection.cursor() as cr:
             _transaction_id = cr.execute(_sql)            
             _transaction_id = cr.fetchone()
-            _logger.info("transcation [%s]" % _transaction_id)
-            
-            _bytecode = transaction.get("input")
-            if len(_bytecode) > 32:
-                _parsed = _parse_bytecode(_bytecode, self.fuzzy_mints)
-                if _parsed:
-                    _name = _parse_name_and_symbol(_bytecode)
-                    if not _name:
-                        return
+            _logger.info("transcation [%s]" % _transaction_id)           
                     
-                    cr.execute("""
-                    UPDATE nft_sniper_raw_transaction SET 
-                    raw_transaction_is_erc20=%s,
-                    raw_transaction_is_erc721=%s,
-                    raw_transaction_mint_function='%s',
-                    raw_transaction_mint_sighash='%s',
-                    raw_transaction_is_freemint='%s',
-                    raw_transaction_contract_name='%s',
-                    raw_transaction_contract_symbol='%s'
-                    WHERE id=%d""" %
-                    ("true" if _parsed.get("is_erc20") else "false",
-                     "true" if _parsed.get("is_erc721") else "false",
-                     _parsed.get("mint_function"),
-                     _parsed.get("mint_sighash"),
-                     "true" if _parsed.get("is_freemint") else "false",
-                     _name.get("name"),
-                     _name.get("symbol"),
-                     _transaction_id[0]))
+            cr.execute("""
+            UPDATE nft_sniper_raw_transaction SET 
+            raw_transaction_is_erc20=%s,
+            raw_transaction_is_erc721=%s,
+            raw_transaction_mint_function='%s',
+            raw_transaction_mint_sighash='%s',
+            raw_transaction_is_freemint='%s',
+            raw_transaction_contract_name='%s',
+            raw_transaction_contract_symbol='%s'
+            WHERE id=%d""" %
+            ("true" if _parsed.get("is_erc20") else "false",
+             "true" if _parsed.get("is_erc721") else "false",
+             _parsed.get("mint_function"),
+             _parsed.get("mint_sighash"),
+             "true" if _parsed.get("is_freemint") else "false",
+             _name.get("name"),
+             _name.get("symbol"),
+             _transaction_id[0]))
         return
