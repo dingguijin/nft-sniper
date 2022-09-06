@@ -5,6 +5,9 @@ from eth_utils import function_signature_to_4byte_selector
 
 _logger = logging.getLogger(__name__)
 
+def get_function_sighash(signature):
+    return '0x' + function_signature_to_4byte_selector(signature).hex()
+
 def clean_bytecode(bytecode):
     if bytecode is None or bytecode == '0x':
         return None
@@ -14,12 +17,33 @@ def clean_bytecode(bytecode):
         return bytecode
 
 class EthFunction(object):
-    def __init__(self):
-        pass
+    def fuzzy_freemint_sighash(self):
+        _mint_names = ["freemint", "freeMint", "free_mint", "mint"]
+        _one_many = ["one", "many", ""]
+        
+        def _fuzzy_names(names, posts):
+            _cap_fuzzy = list(map(lambda x: x.capitalize(), names))
+            _und_fuzzy = list(map(lambda x: "_"+x, names+_cap_fuzzy))
+
+            _names = names + _cap_fuzzy + _und_fuzzy
+            
+            _all_fuzzy = []
+            for i in _names:
+                for j in posts:
+                    _all_fuzzy.append(i + j)
+                    _all_fuzzy.append(i + "_" + j)
+            return _all_fuzzy
+        
+        _names = _fuzzy_names(_mint_names, _one_many)
+        _sigs_no_param = list(map(lambda x: x+"()", _names))
+        _sigs_with_param = list(map(lambda x: x+"(int256)", _names))
+        _sigs_with_uparam = list(map(lambda x: x+"(uint256)", _names))
+        _sigs = _sigs_no_param + _sigs_with_param + _sigs_with_uparam
+        
+        _hashs = list(map(lambda x: get_function_sighash(x), _sigs))
+        return dict(zip(_sigs, _hashs))
 
     def find_name(self, bytecode):
-        def get_function_sighash(signature):
-            return '0x' + function_signature_to_4byte_selector(signature).hex()
 
         name_function_hash = get_function_sighash("name()")
         symbol_function_hash = get_function_sighash("symbol()")
@@ -67,14 +91,19 @@ class EthFunction(object):
             _logger.error("Name meets error: [%s]" % ret.error)
             return None
         name = _decode_return_string(ret.output)
+
+        try:
+            msg = ql.arch.evm.create_message(user_account, contract_account, symbol_function_hash)
+            ret = ql.run(code=msg)
+        except Exception as e:
+            _logger.error("Evm error: [%s]" % e)
+            return None
         
-        msg = ql.arch.evm.create_message(user_account, contract_account, symbol_function_hash)
-        ret = ql.run(code=msg)
         if ret.is_error:
             _logger.error("Symbol meets error: [%s]" % ret.error)
             return None
         symbol = _decode_return_string(ret.output)
-
+        
         _logger.info("Find name: [%s:%s]" % (name, symbol))
         return {"name": name, "symbol": symbol}
     

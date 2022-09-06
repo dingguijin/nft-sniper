@@ -21,6 +21,7 @@ import uuid
 import odoo
 
 from web3 import Web3
+from odoo.addons.odoo_nft_sniper.models.eth_function import EthFunction
 
 # https://eth.ppmessage.com
 # https://mainnet.eth.cloud.ava.do
@@ -61,10 +62,9 @@ def _insert_sql(table_name, attrs, others={}, ignores=[]):
                    str(tuple(_values)))   
     return _sql
 
-def _parse_bytecode(bytecode):
-    from odoo.addons.odoo_nft_sniper.models.eth_contract_service import EthContractService    
-    from odoo.addons.odoo_nft_sniper.models.eth_function import EthFunction
-
+def _parse_bytecode(bytecode, fuzzy_mints):
+    from odoo.addons.odoo_nft_sniper.models.eth_contract_service import EthContractService
+    
     _functions = EthFunction().find_functions(bytecode)
     if not _functions:
         return
@@ -73,20 +73,24 @@ def _parse_bytecode(bytecode):
     _logger.info("function_sighashes: %s" % _function_sighashes)
         
     _service = EthContractService()
-    # try:
-    #     _function_sighashes = _service.get_function_sighashes(bytecode)
-    # except Exception as e:
-    #     logging.error("Exception in sighashes: %s" % e)
-    #     return None
 
+    _mint_function = _service.freemint_function(_function_sighashes, fuzzy_mints)
     _is_erc20 = _service.is_erc20_contract(_function_sighashes)
     _is_erc721 = _service.is_erc721_contract(_function_sighashes)
-    _logger.info("is_erc20 %s, is_erc721 %s" % (_is_erc20, _is_erc721))
+
+    _is_freemint = True if _mint_function else False
+    _mint_sighash = None if not _mint_function else _fuzzy_mints.get(_mint_function)
+
+    _logger.info("is_erc20 [%s], is_erc721 [%s], mint: [%s]" % (_is_erc20, _is_erc721, _mint_function))
 
     if not _is_erc20 and not _is_erc721:
         return None
 
-    return {"is_erc20": _is_erc20, "is_erc721": _is_erc721}
+    return {"is_erc20": _is_erc20,
+            "is_erc721": _is_erc721,
+            "is_freemint": _is_freemint,
+            "mint_function": _mint_function,
+            "mint_sighash": _mint_sighash}
 
 def _parse_name_and_symbol(bytecode):
     from odoo.addons.odoo_nft_sniper.models.eth_function import EthFunction
@@ -103,7 +107,6 @@ class EthWorker():
         w3 = Web3(Web3.HTTPProvider(_PROVIDER_URL))
         w3.provider.request_counter = itertools.count(start=1)
         self.web3 = w3
-        
         return
 
     async def run_loop(self):
@@ -276,6 +279,7 @@ class EthStream():
         w3 = Web3(Web3.HTTPProvider(_PROVIDER_URL))
         w3.provider.request_counter = itertools.count(start=1)
         self.web3 = w3
+        self.fuzzy_mints = EthFunction().fuzzy_freemint_sighash()
         return
 
     async def get_latest_block(self):
@@ -341,7 +345,7 @@ class EthStream():
             
             _bytecode = transaction.get("input")
             if len(_bytecode) > 32:
-                _parsed = _parse_bytecode(_bytecode)
+                _parsed = _parse_bytecode(_bytecode, self.fuzzy_mints)
                 if _parsed:
                     _name = _parse_name_and_symbol(_bytecode)
                     if not _name:

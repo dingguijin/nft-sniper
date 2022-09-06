@@ -71,6 +71,12 @@ class EthContractService:
                c.implements('approve(address,uint256)')
 
 
+    def freemint_function(self, function_sighashes, fuzzy_mints):
+        for name, _hash in fuzzy_mints.items():
+            if _hash in function_sighashes:
+                return name
+        return None
+    
 def clean_bytecode(bytecode):
     if bytecode is None or bytecode == '0x':
         return None
