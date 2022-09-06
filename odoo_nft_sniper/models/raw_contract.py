@@ -26,10 +26,12 @@ class RawContract(models.Model):
 
     raw_contract_erc_std = fields.Char('rawContractErcStd')
     
-    raw_contract_is_freemint = fields.Boolean('rawContractIsFreemint')
-
     raw_contract_is_erc20 = fields.Boolean(string='rawContractIsErc20', related='raw_contract_transaction_id.raw_transaction_is_erc20')
     raw_contract_is_erc721 = fields.Boolean(string='rawContractIsErc721', related='raw_contract_transaction_id.raw_transaction_is_erc721')
+
+    raw_contract_is_freemint = fields.Boolean(string='rawContractIsFreeMint', related='raw_contract_transaction_id.raw_transaction_is_freemint')
+    raw_contract_mint_sighash = fields.Char(string='rawContractMinSigHash', related='raw_contract_transaction_id.raw_transaction_mint_sighash')
+    raw_contract_mint_function = fields.Char(string='rawContractMintFunction', related='raw_contract_transaction_id.raw_transaction_mint_function')
 
     raw_contract_image = fields.Image('rawContractImage')
 

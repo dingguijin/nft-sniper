@@ -78,7 +78,11 @@ def _parse_bytecode(bytecode, fuzzy_mints):
     _is_erc20 = _service.is_erc20_contract(_function_sighashes)
     _is_erc721 = _service.is_erc721_contract(_function_sighashes)
 
-    _is_freemint = True if _mint_function else False
+    _is_freemint = False
+    if _mint_function:
+        if "free" in _mint_function.lower():
+            _is_freemint = True
+        
     _mint_sighash = None if not _mint_function else _fuzzy_mints.get(_mint_function)
 
     _logger.info("is_erc20 [%s], is_erc721 [%s], mint: [%s]" % (_is_erc20, _is_erc721, _mint_function))
@@ -355,11 +359,17 @@ class EthStream():
                     UPDATE nft_sniper_raw_transaction SET 
                     raw_transaction_is_erc20=%s,
                     raw_transaction_is_erc721=%s,
+                    raw_transaction_mint_function='%s',
+                    raw_transaction_mint_sighash='%s',
+                    raw_transaction_is_freemint='%s',
                     raw_transaction_contract_name='%s',
                     raw_transaction_contract_symbol='%s'
                     WHERE id=%d""" %
                     ("true" if _parsed.get("is_erc20") else "false",
                      "true" if _parsed.get("is_erc721") else "false",
+                     _parsed.get("mint_function"),
+                     _parsed.get("mint_sighash"),
+                     "true" if _parsed.get("is_freemint") else "false",
                      _name.get("name"),
                      _name.get("symbol"),
                      _transaction_id[0]))

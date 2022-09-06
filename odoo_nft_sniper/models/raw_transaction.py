@@ -41,5 +41,8 @@ class RawTransaction(models.Model):
 
     raw_transaction_contract_name = fields.Char('contractName')
     raw_transaction_contract_symbol = fields.Char('contractSymbol')
-    
+
+    raw_transaction_is_freemint = fields.Boolean('isFreeMint')
+    raw_transaction_mint_sighash = fields.Char('mintSigHash')
+    raw_transaction_mint_function = fields.Char('mintFunction')
     
