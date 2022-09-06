@@ -10,14 +10,16 @@ class RawContract(models.Model):
     _rec_name = 'raw_contract_name'
 
 
-    raw_contract_name = fields.Char('rawContractName')
-    raw_contract_symbol = fields.Char('rawContractSymbol')
+    raw_contract_name = fields.Char('rawContractName', related='raw_contract_transaction_id.raw_transaction_contract_name')
+    raw_contract_symbol = fields.Char('rawContractSymbol', related='raw_contract_transaction_id.raw_transaction_contract_symbol')
 
-    raw_contract_address = fields.Char('rawContractAddress')
+    raw_contract_address = fields.Char('rawContractAddress', related='raw_contract_receipt_id.raw_transaction_receipt_contract_address')
     
     raw_contract_abi = fields.Char('rawContractAbi')
     raw_contract_source_code = fields.Char('rawContractSourceCode')
     raw_contract_byte_code = fields.Char('rawContractByteCode')
+
+    raw_contract_receipt_id = fields.Many2one('nft_sniper.raw_transaction_receipt')
 
     raw_contract_transaction_id = fields.Many2one('nft_sniper.raw_transaction')
     raw_contract_transaction_hash = fields.Char('rawContractTransactionHash')

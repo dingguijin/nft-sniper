@@ -66,17 +66,19 @@ def _parse_bytecode(bytecode):
     from odoo.addons.odoo_nft_sniper.models.eth_function import EthFunction
 
     _functions = EthFunction().find_functions(bytecode)
-    _logger.info("Found functions: %s" % _functions)
-
-    _service = EthContractService()
-    try:
-        _function_sighashes = _service.get_function_sighashes(bytecode)
-    except Exception as e:
-        logging.error("Exception in sighashes: %s" % e)
-        return None
-
-    _logger.info("function_sighashes %s" % _function_sighashes)
+    if not _functions:
+        return
     
+    _function_sighashes = list(map(lambda x: "0x"+x[1].decode("utf-8"), _functions))
+    _logger.info("function_sighashes: %s" % _function_sighashes)
+        
+    _service = EthContractService()
+    # try:
+    #     _function_sighashes = _service.get_function_sighashes(bytecode)
+    # except Exception as e:
+    #     logging.error("Exception in sighashes: %s" % e)
+    #     return None
+
     _is_erc20 = _service.is_erc20_contract(_function_sighashes)
     _is_erc721 = _service.is_erc721_contract(_function_sighashes)
     _logger.info("is_erc20 %s, is_erc721 %s" % (_is_erc20, _is_erc721))
@@ -86,6 +88,9 @@ def _parse_bytecode(bytecode):
 
     return {"is_erc20": _is_erc20, "is_erc721": _is_erc721}
 
+def _parse_name_and_symbol(bytecode):
+    from odoo.addons.odoo_nft_sniper.models.eth_function import EthFunction
+    return EthFunction().find_name(bytecode)
 
 class EthWorker():
     def __init__(self, dbname):
@@ -222,32 +227,19 @@ class EthWorker():
         _logger.info("CREATE CONTRACT FOR RECEIPT TRANSACTION <<<<<<<<<<<<<")
         _logger.info(_transaction)
         _logger.info("CREATE CONTRACT FOR RECEIPT TRANSACTION<<<<<<<<<<<<<")
-
-        _contract = self._get_contract_name(_contract_address)
-        if not _contract:
-            return
-
-        if not _contract.get("name"):
-            return
         
         _sql = """
         INSERT INTO nft_sniper_raw_contract (
+        raw_contract_receipt_id,
         raw_contract_transaction_id,
-        raw_contract_transaction_hash,
-        raw_contract_name,
-        raw_contract_symbol
+        raw_contract_transaction_hash
         )
-        VALUES (%s, '%s', '%s', '%s')
+        VALUES (%s, %s, '%s')
         """ % (
+            _receipt_id,
             _transaction_id,
-            _transaction_hash,
-            _contract.get("name"),
-            _contract.get("symbol")
-        )
-        _logger.info("create raw_contract >>>>>>>>>>>>>")
-        _logger.info(_sql)
-        _logger.info("create raw_contract >>>>>>>>>>>>>")
-        
+            _transaction_hash
+        )        
         cr.execute(_sql)
         return
 
@@ -273,21 +265,6 @@ class EthWorker():
             """
             cr.execute(_update_sql)
         return
-
-    def _get_contract_name(self, contract_address):
-        from odoo.addons.odoo_nft_sniper.models.eth_token_service import EthTokenService
-
-        _token_service = EthTokenService(self.web3)
-        _token = _token_service.get_token(contract_address)
-        if not _token:
-            logging.error("no name/symbol [%s]" % contract_address)
-            return None
-        
-        _logger.info("token name %s" % _token.name)
-        _logger.info("token symbol %s" % _token.symbol)
-        
-        return {"name": _token.name,
-                "symbol": _token.symbol}
 
 class EthStream():
 
@@ -358,16 +335,28 @@ class EthStream():
                            {"raw_transaction_block_id": block_id},
                            ["accessList"])
         with self.db_connection.cursor() as cr:
-            _transaction_id = cr.execute(_sql)
+            _transaction_id = cr.execute(_sql)            
+            _transaction_id = cr.fetchone()
+            _logger.info("transcation [%s]" % _transaction_id)
+            
             _bytecode = transaction.get("input")
             if len(_bytecode) > 32:
                 _parsed = _parse_bytecode(_bytecode)
                 if _parsed:
+                    _name = _parse_name_and_symbol(_bytecode)
+                    if not _name:
+                        return
+                    
                     cr.execute("""
                     UPDATE nft_sniper_raw_transaction SET 
                     raw_transaction_is_erc20=%s,
-                    raw_transaction_is_erc721=%s WHERE id=%d""" %
-                               ("true" if _parsed.get("is_erc20") else "false",
-                                "true" if _parsed.get("is_erc721") else "false",
-                                _transaction_id))
+                    raw_transaction_is_erc721=%s,
+                    raw_transaction_contract_name='%s',
+                    raw_transaction_contract_symbol='%s'
+                    WHERE id=%d""" %
+                    ("true" if _parsed.get("is_erc20") else "false",
+                     "true" if _parsed.get("is_erc721") else "false",
+                     _name.get("name"),
+                     _name.get("symbol"),
+                     _transaction_id[0]))
         return

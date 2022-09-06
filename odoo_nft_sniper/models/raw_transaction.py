@@ -38,4 +38,8 @@ class RawTransaction(models.Model):
     
     raw_transaction_is_erc20 = fields.Boolean('isErc20')
     raw_transaction_is_erc721 = fields.Boolean('isErc721')
+
+    raw_transaction_contract_name = fields.Char('contractName')
+    raw_transaction_contract_symbol = fields.Char('contractSymbol')
+    
     

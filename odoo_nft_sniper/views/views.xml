@@ -142,21 +142,9 @@
       <field name="view_mode">tree,form</field>
     </record>
 
-    <record id="open_view_raw_receipt" model="ir.actions.act_window">
-      <field name="name">Contract</field>
-      <field name="res_model">nft_sniper.raw_transaction_receipt</field>
-      <field name="view_mode">tree,form</field>
-    </record>
-
     <record id="open_view_raw_contract" model="ir.actions.act_window">
       <field name="name">NFT Contract</field>
       <field name="res_model">nft_sniper.raw_contract</field>
-      <field name="view_mode">tree,form</field>
-    </record>
-
-    <record id="open_view_raw_verified_contract" model="ir.actions.act_window">
-      <field name="name">Verified Contract</field>
-      <field name="res_model">nft_sniper.raw_verified_contract</field>
       <field name="view_mode">tree,form</field>
     </record>
 
@@ -182,22 +170,8 @@
         sequence="1"/>
 
     <menuitem
-        id="menu_all_receipt"
-        name="Contracts"
-        parent="menu_nft_sniper_root"
-        action="open_view_raw_receipt"
-        sequence="1"/>
-
-    <menuitem
-        id="menu_all_verified_contract"
-        name="Verified Contracts"
-        parent="menu_nft_sniper_root"
-        action="open_view_raw_verified_contract"
-        sequence="1"/>
-
-    <menuitem
         id="menu_all_contract"
-        name="NFT Contract"
+        name="Contract"
         parent="menu_nft_sniper_root"
         action="open_view_raw_contract"
         sequence="1"/>
