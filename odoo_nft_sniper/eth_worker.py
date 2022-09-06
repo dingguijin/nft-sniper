@@ -82,8 +82,8 @@ def _parse_bytecode(bytecode, fuzzy_mints):
     if _mint_function:
         if "free" in _mint_function.lower():
             _is_freemint = True
-        
-    _mint_sighash = None if not _mint_function else _fuzzy_mints.get(_mint_function)
+
+    _mint_sighash = None if not _mint_function else fuzzy_mints.get(_mint_function)
 
     _logger.info("is_erc20 [%s], is_erc721 [%s], mint: [%s]" % (_is_erc20, _is_erc721, _mint_function))
 
@@ -342,7 +342,7 @@ class EthStream():
 
         _bytecode = transaction.get("input")
         if not _bytecode or len(_bytecode) < 32:
-            _logger.info("Ignore transation without input %s" % Web3.toHex(transaction.get("hash")))
+            _logger.info("Ignore %s" % Web3.toHex(transaction.get("hash")))
             return
         
         _parsed = _parse_bytecode(_bytecode, self.fuzzy_mints)
