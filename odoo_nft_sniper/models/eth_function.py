@@ -1,4 +1,15 @@
 import binascii
+import logging
+
+_logger = logging.getLogger(__name__)
+
+def clean_bytecode(bytecode):
+    if bytecode is None or bytecode == '0x':
+        return None
+    elif bytecode.startswith('0x'):
+        return bytecode[2:]
+    else:
+        return bytecode
 
 class EthFunction(object):
     def __init__(self):
@@ -6,6 +17,10 @@ class EthFunction(object):
 
     def find_functions(self, bytecode):
         bytecode = bytecode.strip()
+        bytecode = clean_bytecode(bytecode)
+        if not bytecode:
+            return []
+        
         code = binascii.unhexlify(bytecode)
         functions = []
         i = 0
@@ -24,7 +39,7 @@ class EthFunction(object):
                             offset = code[i + off + 7] * 256 + code[i + off + 8]
                             #name = ''.join(map(chr, value))
                             #print(name)
-                            print('Found function %s at offset %s' % (binascii.hexlify(value), offset))
+                            _logger.info('Found function %s at offset %s' % (binascii.hexlify(value), offset))
                             functions.append((offset, binascii.hexlify(value)))
                             break
                 i += 5

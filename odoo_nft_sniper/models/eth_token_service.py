@@ -22,6 +22,7 @@
 import logging
 
 from web3.exceptions import BadFunctionCallOutput
+from web3.exceptions import ContractLogicError
 
 from odoo.addons.odoo_nft_sniper.models.eth_token import EthToken
 from odoo.addons.odoo_nft_sniper.models.eth_erc20_abi import ERC20_ABI, ERC20_ABI_ALTERNATIVE_1
@@ -77,7 +78,7 @@ class EthTokenService(object):
         # OverflowError exception happens if the return type of the function doesn't match the expected type
         result = call_contract_function(
             func=func,
-            ignore_errors=(BadFunctionCallOutput, OverflowError, ValueError),
+            ignore_errors=(BadFunctionCallOutput, OverflowError, ValueError, ContractLogicError),
             default_value=None)
 
         if self._function_call_result_transformer is not None:

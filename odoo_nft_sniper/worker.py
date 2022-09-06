@@ -82,7 +82,6 @@ class EthWorkerThread(threading.Thread):
 
     def stop(self):
         _logger.info("stoping ..... %s", self.name)
-        self.cti.stop()
         return
 
     def __init__(self, dbname):
